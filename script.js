@@ -343,7 +343,7 @@ $("box-lewis").addEventListener("click", () => {
 // ====================== //
 async function getRaceInsight() {
   try {
-    const response = await fetch("http://localhost:4000/strategy", {
+    const response = await fetch("https://ai-strategy-server-production.up.railway.app/strategy", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
