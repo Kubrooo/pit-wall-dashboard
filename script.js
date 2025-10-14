@@ -1,23 +1,55 @@
-const drivers = {
+// ====================== //
+// TIRE DATA
+// ====================== //
+const tireCompounds = {
+  soft: {
+    name: "Soft",
+    color: "#ef4444",
+    grip: 1.5,
+    degradation: 1.8,
+  },
+  medium: {
+    name: "Medium",
+    color: "#facc15",
+    grip: 0.5,
+    degradation: 1.0,
+  },
+  hard: {
+    name: "Hard",
+    color: "#d1d5db",
+    grip: -1.0,
+    degradation: 0.6,
+  },
+};
+
+// ====================== //
+// DRIVER DATA
+// ====================== //
+const initialDriverState = {
   leclerc: {
     name: "Charles Leclerc",
     number: 16,
-    speed: 300,
-    fuel: 60,
-    tireWear: 20,
-    lapTime: 75.3,
+    speed: 0,
+    fuel: 100,
+    tireWear: 0,
+    lapTime: 0.0,
     color: "#f43f5e",
+    compound: "medium",
   },
   lewis: {
     name: "Lewis Hamilton",
     number: 44,
-    speed: 298,
-    fuel: 62, 
-    tireWear: 18,
-    lapTime: 75.9,
+    speed: 0,
+    fuel: 100,
+    tireWear: 0,
+    lapTime: 0.0,
     color: "#60a5fa",
+    compound: "medium",
   },
 };
+
+// Use a deep copy for the simulation state so we can reset it later
+let drivers = JSON.parse(JSON.stringify(initialDriverState));
 
 let lap = 0;
 let totalLaps = 58;
@@ -37,54 +69,53 @@ const fuelDataLewis = [];
 const $ = (id) => document.getElementById(id);
 const rand = (min, max) => Math.random() * (max - min) + min;
 
-function formatTime(seconds) {
-  const s = Math.floor(seconds % 60);
-  const m = Math.floor(seconds / 60);
-  return `${m}:${s.toString().padStart(2, "0")}`;
-}
-
-// ======================
+// ====================== //
 // UI UPDATE
-// ======================
+// ====================== //
 function updateDriverUI(key) {
   const d = drivers[key];
-  $(`speed-${key}`).textContent = Math.round(d.speed) + " km/h";
-  $(`laptime-${key}`).textContent = d.lapTime.toFixed(2) + " s";
+  $(`speed-${key}`).textContent = d.speed === 0 ? "— km/h" : Math.round(d.speed) + " km/h";
+  $(`laptime-${key}`).textContent = d.lapTime === 0 ? "—" : d.lapTime.toFixed(2) + " s";
   $(`fuel-${key}`).textContent = Math.round(d.fuel) + " %";
   $(`tire-${key}`).textContent = Math.round(d.tireWear) + " %";
 
-  // Status color
+  const compound = tireCompounds[d.compound];
+  const compoundEl = $(`compound-${key}`);
+  compoundEl.textContent = compound.name;
+  compoundEl.parentElement.style.borderColor = compound.color;
+
   const statusEl = $(`status-${key}`);
   const isBox = d.tireWear > 75 || d.fuel < 10;
   statusEl.textContent = isBox ? "Box Now" : "Green";
   statusEl.className = isBox ? "text-red-400" : "text-green-400";
 }
 
-// ======================
-// SIMULATION ENGINE
-// ======================
+// ====================== //
+// SIMULATION ENGINE (MODIFIED)
+// ====================== //
 function simulateStep() {
   lap++;
-  if (lap >= totalLaps) {
-    lap = totalLaps;
-    clearInterval(intervalId);
-    intervalId = null;
-    $("race-summary").textContent += " — Race Finished 🏁";
-    getRaceInsight();
-    return;
-  }
   $("lap-number").textContent = lap;
 
-  // Update driver data
   Object.keys(drivers).forEach((key) => {
     const d = drivers[key];
-    d.speed = Math.max(250, Math.min(340, d.speed + rand(-3, 3)));
-    d.lapTime = Math.max(60, d.lapTime + rand(-0.5, 0.5));
-    d.fuel = Math.max(0, d.fuel - rand(0.2, 0.7));
-    d.tireWear = Math.min(100, d.tireWear + rand(0.3, 1.2));
+    const tire = tireCompounds[d.compound];
+
+    // Initialize speed and laptime on the first lap
+    if (lap === 1) {
+        d.speed = 300;
+        d.lapTime = 75;
+    }
+
+    d.speed = Math.max(250, Math.min(340, d.speed + rand(-3, 3) + tire.grip));
+    d.lapTime = Math.max(60, d.lapTime + rand(-0.5, 0.5) - tire.grip * 0.1);
+    d.fuel = Math.max(0, d.fuel - rand(1.5, 1.8));
+    d.tireWear = Math.min(
+      100,
+      d.tireWear + rand(0.5, 1.5) * tire.degradation
+    );
   });
 
-  // Label waktu
   const now = new Date();
   const label = `${now.getMinutes()}:${now
     .getSeconds()
@@ -92,7 +123,6 @@ function simulateStep() {
     .padStart(2, "0")}`;
   timeLabels.push(label);
 
-  // Push data terbaru
   speedDataLeclerc.push(drivers.leclerc.speed);
   speedDataLewis.push(drivers.lewis.speed);
   tireDataLeclerc.push(drivers.leclerc.tireWear);
@@ -100,7 +130,6 @@ function simulateStep() {
   fuelDataLeclerc.push(drivers.leclerc.fuel);
   fuelDataLewis.push(drivers.lewis.fuel);
 
-  // Limit data biar ga lag (max 30 titik)
   const maxPoints = 30;
   [
     timeLabels,
@@ -114,23 +143,30 @@ function simulateStep() {
     if (arr.length > maxPoints) arr.splice(0, arr.length - maxPoints);
   });
 
-  // Update UI dan chart
   updateDriverUI("leclerc");
   updateDriverUI("lewis");
   updateCharts();
   updateRaceSummary();
+  
+  // NEW: Check for race finish AFTER the final lap is simulated and displayed
+  if (lap >= totalLaps) {
+    clearInterval(intervalId);
+    intervalId = null;
+    $("race-summary").textContent += " — Race Finished 🏁";
+    getRaceInsight();
+  }
 }
 
-// ======================
+// ====================== //
 // CHARTS
-// ======================
+// ====================== //
 let speedChart, tireChart, fuelChart;
 
 function initCharts() {
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: true,
+    animation: false,
     scales: {
       x: { ticks: { color: "#aaa" } },
       y: { ticks: { color: "#aaa" }, beginAtZero: false },
@@ -138,75 +174,48 @@ function initCharts() {
     plugins: { legend: { labels: { color: "#fff" } } },
   };
 
-  // Speed Chart
   speedChart = new Chart($("speedChart").getContext("2d"), {
     type: "line",
     data: {
       labels: timeLabels,
       datasets: [
         {
-          label: "Leclerc Speed",
-          data: speedDataLeclerc,
-          borderColor: drivers.leclerc.color,
-          borderWidth: 2,
-          tension: 0.2,
+          label: "Leclerc Speed", data: speedDataLeclerc, borderColor: drivers.leclerc.color, borderWidth: 2, tension: 0.2,
         },
         {
-          label: "Lewis Speed",
-          data: speedDataLewis,
-          borderColor: drivers.lewis.color,
-          borderWidth: 2,
-          tension: 0.2,
+          label: "Lewis Speed", data: speedDataLewis, borderColor: drivers.lewis.color, borderWidth: 2, tension: 0.2,
         },
       ],
     },
     options: chartOptions,
   });
 
-  // Tire Chart
   tireChart = new Chart($("tireChart").getContext("2d"), {
     type: "line",
     data: {
       labels: timeLabels,
       datasets: [
         {
-          label: "Leclerc Tire Wear",
-          data: tireDataLeclerc,
-          borderColor: drivers.leclerc.color,
-          borderWidth: 2,
-          tension: 0.2,
+          label: "Leclerc Tire Wear", data: tireDataLeclerc, borderColor: drivers.leclerc.color, borderWidth: 2, tension: 0.2,
         },
         {
-          label: "Lewis Tire Wear",
-          data: tireDataLewis,
-          borderColor: drivers.lewis.color,
-          borderWidth: 2,
-          tension: 0.2,
+          label: "Lewis Tire Wear", data: tireDataLewis, borderColor: drivers.lewis.color, borderWidth: 2, tension: 0.2,
         },
       ],
     },
     options: chartOptions,
   });
 
-  // Fuel Chart
   fuelChart = new Chart($("fuelChart").getContext("2d"), {
     type: "line",
     data: {
       labels: timeLabels,
       datasets: [
         {
-          label: "Leclerc Fuel %",
-          data: fuelDataLeclerc,
-          borderColor: drivers.leclerc.color,
-          borderWidth: 2,
-          tension: 0.2,
+          label: "Leclerc Fuel %", data: fuelDataLeclerc, borderColor: drivers.leclerc.color, borderWidth: 2, tension: 0.2,
         },
         {
-          label: "Lewis Fuel %",
-          data: fuelDataLewis,
-          borderColor: drivers.lewis.color,
-          borderWidth: 2,
-          tension: 0.2,
+          label: "Lewis Fuel %", data: fuelDataLewis, borderColor: drivers.lewis.color, borderWidth: 2, tension: 0.2,
         },
       ],
     },
@@ -215,28 +224,25 @@ function initCharts() {
 }
 
 function updateCharts() {
-  // Speed
   speedChart.data.labels = timeLabels.slice();
   speedChart.data.datasets[0].data = speedDataLeclerc.slice();
   speedChart.data.datasets[1].data = speedDataLewis.slice();
   speedChart.update("none");
 
-  // Tire
   tireChart.data.labels = timeLabels.slice();
   tireChart.data.datasets[0].data = tireDataLeclerc.slice();
   tireChart.data.datasets[1].data = tireDataLewis.slice();
   tireChart.update("none");
 
-  // Fuel
   fuelChart.data.labels = timeLabels.slice();
   fuelChart.data.datasets[0].data = fuelDataLeclerc.slice();
   fuelChart.data.datasets[1].data = fuelDataLewis.slice();
   fuelChart.update("none");
 }
 
-// ======================
+// ====================== //
 // RACE INFO
-// ======================
+// ====================== //
 function updateRaceSummary() {
   const summary = `Lap ${lap}/${totalLaps} — Leclerc: ${drivers.leclerc.lapTime.toFixed(
     2
@@ -244,87 +250,97 @@ function updateRaceSummary() {
   $("race-summary").textContent = summary;
 }
 
-// ======================
-// BUTTON CONTROLS
-// ======================
+// ====================== //
+// PIT STOP LOGIC
+// ====================== //
+function performPitStop(driverKey, newCompound) {
+  const driver = drivers[driverKey];
+  const statusEl = $(`status-${driverKey}`);
+
+  driver.compound = newCompound;
+  driver.tireWear = 0;
+  driver.lapTime += 20;
+  statusEl.textContent = "IN PIT";
+  statusEl.className = "text-yellow-400";
+
+  setTimeout(() => {
+    updateDriverUI(driverKey);
+  }, updateMs * 1.5);
+}
+
+// ====================== //
+// NEW: RACE RESET FUNCTION
+// ====================== //
+function resetRace() {
+    // Stop any active simulation
+    if (intervalId) clearInterval(intervalId);
+    intervalId = null;
+
+    // Reset variables
+    lap = 0;
+    drivers = JSON.parse(JSON.stringify(initialDriverState)); // Reset driver data
+
+    // Clear chart data
+    timeLabels.length = 0;
+    speedDataLeclerc.length = 0;
+    speedDataLewis.length = 0;
+    tireDataLeclerc.length = 0;
+    tireDataLewis.length = 0;
+    fuelDataLeclerc.length = 0;
+    fuelDataLewis.length = 0;
+    
+    // Update UI
+    $("lap-number").textContent = lap;
+    $("race-summary").textContent = "Race reset. Ready to start.";
+    updateDriverUI("leclerc");
+    updateDriverUI("lewis");
+    updateCharts();
+}
+
+
+// ====================== //
+// BUTTON CONTROLS (MODIFIED)
+// ====================== //
 $("start-btn").addEventListener("click", () => {
-  if (intervalId) return;
+  if (intervalId) return; // Prevent multiple intervals
+  // If race is over, reset before starting
+  if (lap >= totalLaps) {
+    resetRace();
+  }
   updateMs = Number($("update-interval").value);
   intervalId = setInterval(simulateStep, updateMs);
 });
 
 $("stop-btn").addEventListener("click", () => {
-  if (intervalId) clearInterval(intervalId);
-  intervalId = null;
+  resetRace(); // NEW: Call the reset function
 });
 
 $("session-select").addEventListener("change", (e) => {
-  const session = e.target.value;
+    const session = e.target.value;
 
-  switch (session) {
-    case "fp1":
-    case "fp2":
-    case "fp3":
-      totalLaps = 20;
-      updateMs = 1500;
-      break;
-    case "q1":
-    case "q2":
-    case "q3":
-      totalLaps = 12;
-      updateMs = 1200;
-      break;
-    case "sprint":
-      totalLaps = 25;
-      updateMs = 1000;
-      break;
-    case "race":
-    default:
-      totalLaps = 58;
-      updateMs = 2000;
-      break;
-  }
-
-  // Reset race
-  lap = 0;
-  $("lap-number").textContent = lap;
-  $("total-laps").textContent = totalLaps;
-  $(
-    "race-summary"
-  ).textContent = `Session: ${session.toUpperCase()} — Ready 🏎️`;
-
-  // Stop interval jika sedang jalan
-  if (intervalId) {
-    clearInterval(intervalId);
-    intervalId = null;
-  }
-
-  // Reset data telemetry
-  timeLabels.length = 0;
-  speedDataLeclerc.length = 0;
-  speedDataLewis.length = 0;
-  tireDataLeclerc.length = 0;
-  tireDataLewis.length = 0;
-  fuelDataLeclerc.length = 0;
-  fuelDataLewis.length = 0;
-  updateCharts();
+    switch (session) {
+        case "fp1": case "fp2": case "fp3": totalLaps = 20; break;
+        case "q1": case "q2": case "q3": totalLaps = 12; break;
+        case "sprint": totalLaps = 25; break;
+        case "race": default: totalLaps = 58; break;
+    }
+    $("total-laps").textContent = totalLaps;
+    resetRace(); // Reset the simulation when changing session
 });
 
 $("box-leclerc").addEventListener("click", () => {
-  drivers.leclerc.tireWear = Math.max(0, drivers.leclerc.tireWear - 40);
-  drivers.leclerc.fuel = Math.max(0, drivers.leclerc.fuel - 8);
-  updateDriverUI("leclerc");
+  const selectedTire = $("tire-select-leclerc").value;
+  performPitStop("leclerc", selectedTire);
 });
 
 $("box-lewis").addEventListener("click", () => {
-  drivers.lewis.tireWear = Math.max(0, drivers.lewis.tireWear - 40);
-  drivers.lewis.fuel = Math.max(0, drivers.lewis.fuel - 8);
-  updateDriverUI("lewis");
+  const selectedTire = $("tire-select-lewis").value;
+  performPitStop("lewis", selectedTire);
 });
 
-// ======================
+// ====================== //
 // AI STRATEGY INSIGHT
-// ======================
+// ====================== //
 async function getRaceInsight() {
   try {
     const response = await fetch("http://localhost:4000/strategy", {
@@ -347,17 +363,12 @@ async function getRaceInsight() {
     document.querySelector("#race-summary").appendChild(insightBox);
   } catch (err) {
     console.error("AI Strategy Error:", err);
-    const insightBox = document.createElement("div");
-    insightBox.className =
-      "mt-3 p-3 bg-red-900 border border-red-700 rounded-lg text-sm text-red-200";
-    insightBox.textContent = "⚠️ Failed to get AI insight.";
-    document.querySelector("#race-summary").appendChild(insightBox);
   }
 }
 
-// ======================
+// ====================== //
 // INIT
-// ======================
+// ====================== //
 window.addEventListener("load", () => {
   initCharts();
   updateDriverUI("leclerc");

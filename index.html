@@ -94,6 +94,10 @@
               <div class="text-xs text-gray-400">Tire Wear</div>
               <div id="tire-leclerc" class="text-lg font-semibold">— %</div>
             </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-xs text-gray-400">Tire Compound</div>
+              <div id="compound-leclerc" class="text-lg font-semibold">—</div>
+            </div>
           </div>
 
           <div class="mt-4">
@@ -103,6 +107,14 @@
             >
               Force Box
             </button>
+            <select
+              id="tire-select-leclerc"
+              class="bg-gray-700 text-sm rounded px-2 py-1 border border-gray-600"
+            >
+              <option value="soft">Soft</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
           </div>
         </div>
 
@@ -146,6 +158,10 @@
               <div class="text-xs text-gray-400">Tire Wear</div>
               <div id="tire-lewis" class="text-lg font-semibold">— %</div>
             </div>
+            <div class="p-2 bg-gray-900 rounded">
+              <div class="text-xs text-gray-400">Tire Compound</div>
+              <div id="compound-lewis" class="text-lg font-semibold">—</div>
+            </div>
           </div>
 
           <div class="mt-4">
@@ -155,9 +171,14 @@
             >
               Force Box
             </button>
-            <button class="px-3 py-1 rounded bg-red-600 text-white text-sm">
-              Pit to tyres
-            </button>
+            <select
+              id="tire-select-lewis"
+              class="bg-gray-700 text-sm rounded px-2 py-1 border border-gray-600"
+            >
+              <option value="soft">Soft</option>
+              <option value="medium" selected>Medium</option>
+              <option value="hard">Hard</option>
+            </select>
           </div>
         </div>
       </section>
@@ -224,7 +245,7 @@
         </div>
       </section>
     </main>
-
+    </div>
     <script src="script.js"></script>
   </body>
 </html>
