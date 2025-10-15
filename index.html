@@ -4,28 +4,50 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>PitWall — F1 Race Strategy Dashboard</title>
-
-    <!-- Tailwind CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-    <link rel="icon" href="assets/ferrari.png" />
-    <link rel="stylesheet" href="style.css" />
+    <!-- Ganti ikon dengan placeholder agar bisa dimuat -->
+    <link rel="icon" href="https://placehold.co/32x32/FF0000/FFFFFF?text=F" />
+    <style>
+      /* Custom scrollbar for better aesthetics in dark mode */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1f2937; /* bg-gray-800 */
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #4b5563; /* bg-gray-600 */
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #6b7280; /* bg-gray-500 */
+      }
+      /* Simple fade-in animation for AI insight */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+    </style>
   </head>
 
   <body class="bg-gray-900 text-gray-100 font-sans">
     <!-- HEADER -->
-    <header
-      class="flex items-center justify-between p-4 border-b border-gray-800"
-    >
+    <header class="flex items-center justify-between p-4 border-b border-gray-800">
       <div class="flex items-center gap-3">
-        <img src="assets/ferrari.png" alt="Ferrari" class="w-10 h-auto" />
+        <img src="assets/ferrari.png" alt="Ferrari" class="w-10 h-auto rounded-md" />
         <div>
           <h1 class="text-xl font-semibold">Scuderia PitWall</h1>
           <p class="text-sm text-gray-400">Race Strategy Dashboard — Demo</p>
         </div>
+      </div>
+       <!-- BARU: Tampilan Status Bendera -->
+      <div id="flag-status-container" class="flex items-center gap-3 p-2 rounded-lg bg-gray-800">
+          <div id="flag-status-icon" class="w-6 h-6 rounded-full bg-green-500 animate-pulse"></div>
+          <div id="flag-status-text" class="font-bold text-green-400">GREEN FLAG</div>
       </div>
       <div class="text-right">
         <div class="text-sm text-gray-400">
@@ -33,18 +55,10 @@
         </div>
         <div class="text-sm text-gray-400 flex items-center gap-2">
           <label for="session-select">Session:</label>
-          <select
-            id="session-select"
-            class="bg-gray-900 text-sm rounded px-2 py-1 border border-gray-700"
-          >
-            <option value="fp1">FP1</option>
-            <option value="fp2">FP2</option>
-            <option value="fp3">FP3</option>
-            <option value="q1">Q1</option>
-            <option value="q2">Q2</option>
-            <option value="q3">Q3</option>
-            <option value="sprint">Sprint</option>
+          <select id="session-select" class="bg-gray-900 text-sm rounded px-2 py-1 border border-gray-700">
             <option value="race" selected>Race</option>
+            <option value="sprint">Sprint</option>
+            <option value="q3">Qualifying</option>
           </select>
         </div>
       </div>
@@ -52,20 +66,13 @@
 
     <!-- MAIN -->
     <main class="p-4 grid grid-cols-1 lg:grid-cols-12 gap-4">
-      <!-- Left Side: Driver Panels -->
+      <!-- Left Side: Driver Panels & Weather -->
       <section class="lg:col-span-4 space-y-4 w-full">
         <!-- Charles Leclerc -->
-        <div
-          id="driver-leclerc"
-          class="driver-card bg-gray-800 rounded-lg p-4 border border-gray-700"
-        >
+        <div id="driver-leclerc" class="driver-card bg-gray-800 rounded-lg p-4 border border-gray-700">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <img
-                src="assets/leclerc.png"
-                alt="Leclerc"
-                class="w-12 h-12 rounded-full object-cover"
-              />
+               <img src="assets/leclerc.png" alt="Leclerc" class="w-12 h-12 rounded-full object-cover"/>
               <div>
                 <div class="text-lg font-medium">Charles Leclerc</div>
                 <div class="text-sm text-gray-400">#16 — Ferrari</div>
@@ -76,176 +83,126 @@
               <div id="status-leclerc" class="text-sm">Green</div>
             </div>
           </div>
-
-          <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Speed</div>
-              <div id="speed-leclerc" class="text-xl font-semibold">— km/h</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Lap Time</div>
-              <div id="laptime-leclerc" class="text-xl font-semibold">—</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Fuel</div>
-              <div id="fuel-leclerc" class="text-lg font-semibold">— %</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Tire Wear</div>
-              <div id="tire-leclerc" class="text-lg font-semibold">— %</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Tire Compound</div>
-              <div id="compound-leclerc" class="text-lg font-semibold">—</div>
-            </div>
+          <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Speed</div><div id="speed-leclerc" class="text-xl font-semibold">— km/h</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Lap Time</div><div id="laptime-leclerc" class="text-xl font-semibold">—</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Fuel</div><div id="fuel-leclerc" class="text-lg font-semibold">— %</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Tire Wear</div><div id="tire-leclerc" class="text-lg font-semibold">— %</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Tire Compound</div><div id="compound-leclerc" class="text-lg font-semibold">—</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Position</div><div id="position-leclerc" class="text-xl font-semibold">—</div></div>
           </div>
-
           <div class="mt-4">
-            <button
-              id="box-leclerc"
-              class="px-3 py-1 rounded bg-red-600 text-white text-sm"
-            >
-              Force Box
-            </button>
-            <select
-              id="tire-select-leclerc"
-              class="bg-gray-700 text-sm rounded px-2 py-1 border border-gray-600"
-            >
+            <button id="box-leclerc" class="px-3 py-1 rounded bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Force Box</button>
+            <select id="tire-select-leclerc" class="bg-gray-700 text-sm rounded px-2 py-1 border border-gray-600">
               <option value="soft">Soft</option>
               <option value="medium" selected>Medium</option>
               <option value="hard">Hard</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="wet">Wet</option>
             </select>
           </div>
         </div>
-
         <!-- Lewis Hamilton -->
-        <div
-          id="driver-lewis"
-          class="driver-card bg-gray-800 rounded-lg p-4 border border-gray-700"
-        >
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <img
-                src="assets/lewis.png"
-                alt="Lewis Hamilton"
-                class="w-12 h-12 rounded-full object-cover"
-              />
-              <div>
-                <div class="text-lg font-medium">Lewis Hamilton</div>
-                <div class="text-sm text-gray-400">#44 — Ferrari</div>
-              </div>
-            </div>
-            <div class="text-right">
-              <div class="text-sm text-gray-400">Status</div>
-              <div id="status-lewis" class="text-sm">Green</div>
-            </div>
+        <div id="driver-lewis" class="driver-card bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <div class="flex items-center justify-between">
+             <div class="flex items-center gap-3">
+               <img src="assets/lewis.png" alt="Hamilton" class="w-12 h-12 rounded-full object-cover"/>
+               <div>
+                 <div class="text-lg font-medium">Lewis Hamilton</div>
+                 <div class="text-sm text-gray-400">#44 — Ferrari</div>
+               </div>
+             </div>
+             <div class="text-right">
+               <div class="text-sm text-gray-400">Status</div>
+               <div id="status-lewis" class="text-sm">Green</div>
+             </div>
+           </div>
+           <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Speed</div><div id="speed-lewis" class="text-xl font-semibold">— km/h</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Lap Time</div><div id="laptime-lewis" class="text-xl font-semibold">—</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Fuel</div><div id="fuel-lewis" class="text-lg font-semibold">— %</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Tire Wear</div><div id="tire-lewis" class="text-lg font-semibold">— %</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Tire Compound</div><div id="compound-lewis" class="text-lg font-semibold">—</div></div>
+              <div class="p-2 bg-gray-900 rounded"><div class="text-xs text-gray-400">Position</div><div id="position-lewis" class="text-xl font-semibold">—</div></div>
+           </div>
+           <div class="mt-4">
+             <button id="box-lewis" class="px-3 py-1 rounded bg-red-600 text-white text-sm hover:bg-red-700 transition-colors">Force Box</button>
+             <select id="tire-select-lewis" class="bg-gray-700 text-sm rounded px-2 py-1 border border-gray-600">
+               <option value="soft">Soft</option>
+               <option value="medium" selected>Medium</option>
+               <option value="hard">Hard</option>
+               <option value="intermediate">Intermediate</option>
+               <option value="wet">Wet</option>
+             </select>
+           </div>
+        </div>
+        <!-- Circuit & Weather Section -->
+        <div id="weather-card" class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-lg font-medium">Circuit & Weather</h2>
+            <select id="circuit-select" class="bg-gray-900 text-sm rounded px-2 py-1 border border-gray-700"></select>
           </div>
-
-          <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+          <div id="weather-display" class="grid grid-cols-3 gap-3 text-center">
             <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Speed</div>
-              <div id="speed-lewis" class="text-xl font-semibold">— km/h</div>
+              <div class="text-xs text-gray-400">Weather</div>
+              <div id="weather-icon" class="text-3xl my-1">⚙️</div>
+              <div id="weather-desc" class="text-sm font-semibold">Loading...</div>
             </div>
             <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Lap Time</div>
-              <div id="laptime-lewis" class="text-xl font-semibold">—</div>
+              <div class="text-xs text-gray-400">Temperature</div>
+              <div id="weather-temp" class="text-2xl font-semibold mt-2">— °C</div>
+              <div id="weather-feels" class="text-xs text-gray-400">Feels like — °C</div>
             </div>
             <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Fuel</div>
-              <div id="fuel-lewis" class="text-lg font-semibold">— %</div>
+              <div class="text-xs text-gray-400">Wind</div>
+              <div id="weather-wind" class="text-2xl font-semibold mt-2">— km/h</div>
+              <div id="weather-humidity" class="text-xs text-gray-400">Humidity: — %</div>
             </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Tire Wear</div>
-              <div id="tire-lewis" class="text-lg font-semibold">— %</div>
-            </div>
-            <div class="p-2 bg-gray-900 rounded">
-              <div class="text-xs text-gray-400">Tire Compound</div>
-              <div id="compound-lewis" class="text-lg font-semibold">—</div>
-            </div>
-          </div>
-
-          <div class="mt-4">
-            <button
-              id="box-lewis"
-              class="px-3 py-1 rounded bg-red-600 text-white text-sm"
-            >
-              Force Box
-            </button>
-            <select
-              id="tire-select-lewis"
-              class="bg-gray-700 text-sm rounded px-2 py-1 border border-gray-600"
-            >
-              <option value="soft">Soft</option>
-              <option value="medium" selected>Medium</option>
-              <option value="hard">Hard</option>
-            </select>
           </div>
         </div>
       </section>
 
-      <!-- Right Side: Telemetry -->
-      <section class="lg:col-span-8 overflow-y-auto h-[88vh] w-full">
-        <div
-          class="bg-gray-800 rounded-lg p-4 border border-gray-700 h-full flex flex-col"
-        >
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-medium">Telemetry</h2>
+      <!-- Right Side: Standings, Telemetry, Log -->
+      <section class="lg:col-span-8 space-y-4 w-full h-[88vh] overflow-y-auto pr-2">
+        
+        <!-- Live Standings Panel -->
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <h2 class="text-lg font-medium mb-2">Live Race Standings</h2>
+            <div id="standings-container">
+                <!-- Standings will be populated by JS -->
+            </div>
+        </div>
+
+        <!-- Telemetry Panel -->
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700 flex flex-col">
+          <div class="flex items-center flex-wrap justify-end gap-2 mb-4">
+            <h2 class="text-lg font-medium mr-auto">Telemetry</h2>
             <div class="flex items-center gap-2">
               <label class="text-sm text-gray-400">Update interval</label>
-              <select
-                id="update-interval"
-                class="bg-gray-900 text-sm rounded px-2 py-1"
-              >
-                <option value="1000">1s</option>
-                <option value="2000" selected>2s</option>
-                <option value="3000">3s</option>
+              <select id="update-interval" class="bg-gray-900 text-sm rounded px-2 py-1">
+                <option value="1000">1s</option><option value="2000" selected>2s</option><option value="3000">3s</option>
               </select>
-              <button
-                id="start-btn"
-                class="px-3 py-1 rounded bg-green-600 text-sm"
-              >
-                Start
-              </button>
-              <button
-                id="stop-btn"
-                class="px-3 py-1 rounded bg-gray-700 text-sm"
-              >
-                Stop
-              </button>
+              <button id="start-btn" class="px-3 py-1 rounded bg-green-600 text-sm hover:bg-green-700 transition-colors">Start</button>
+              <button id="stop-btn" class="px-3 py-1 rounded bg-red-800 text-sm hover:bg-red-700 transition-colors">Reset</button>
             </div>
           </div>
-
-          <!-- Telemetry Charts -->
-          <div class="flex flex-col gap-3 flex-grow">
-            <div class="bg-gray-900 rounded-lg p-2 flex flex-col h-[25%]">
-              <h3 class="text-sm text-center text-gray-400 mb-1">
-                Tire Wear (%)
-              </h3>
-              <canvas id="tireChart" class="w-full h-full"></canvas>
-            </div>
-
-            <div class="bg-gray-900 rounded-lg p-2 flex flex-col h-[25%]">
-              <h3 class="text-sm text-center text-gray-400 mb-1">
-                Speed (km/h)
-              </h3>
-              <canvas id="speedChart" class="w-full h-full"></canvas>
-            </div>
-
-            <div class="bg-gray-900 rounded-lg p-2 flex flex-col h-[25%]">
-              <h3 class="text-sm text-center text-gray-400 mb-1">Fuel (%)</h3>
-              <canvas id="fuelChart" class="w-full h-full"></canvas>
-            </div>
+          <div class="flex flex-col gap-3 flex-grow h-[60vh]">
+            <div class="bg-gray-900 rounded-lg p-2 flex flex-col h-1/3"><h3 class="text-sm text-center text-gray-400 mb-1">Tire Wear (%)</h3><canvas id="tireChart"></canvas></div>
+            <div class="bg-gray-900 rounded-lg p-2 flex flex-col h-1/3"><h3 class="text-sm text-center text-gray-400 mb-1">Speed (km/h)</h3><canvas id="speedChart"></canvas></div>
+            <div class="bg-gray-900 rounded-lg p-2 flex flex-col h-1/3"><h3 class="text-sm text-center text-gray-400 mb-1">Fuel (%)</h3><canvas id="fuelChart"></canvas></div>
           </div>
+        </div>
 
-          <!-- Race Summary -->
-          <div class="mt-3 p-3 bg-gray-900 rounded-lg border border-gray-800">
-            <h3 class="text-md font-medium mb-1">Race Summary</h3>
-            <div id="race-summary" class="text-sm text-gray-300"></div>
-          </div>
+        <!-- Race Log Panel -->
+        <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
+            <h2 class="text-lg font-medium mb-2">Race & Strategy Log</h2>
+            <div id="race-log-container" class="text-sm space-y-2 max-h-48 overflow-y-auto text-gray-300">
+                <!-- Log entries will be populated by JS -->
+            </div>
         </div>
       </section>
     </main>
-    </div>
     <script src="script.js"></script>
   </body>
 </html>
+
