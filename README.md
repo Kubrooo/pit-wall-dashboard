@@ -1,4 +1,4 @@
-# 🏎️ PitWall - F1 Race Strategy Dashboard
+# PitWall - F1 Race Strategy Dashboard
 
 <p align="center">
 <strong>An immersive real-time F1 race strategy simulation dashboard. Experience the thrill of the <em>pit wall</em> as you monitor telemetry, dynamic weather, and unpredictable race-changing incidents.</strong>
@@ -6,7 +6,7 @@
 
 ---
 
-## 🚀 About This Project
+## About This Project
 
 **PitWall** is an interactive web application born from a passion for the data-driven and strategic world of Formula 1. The project aims to simulate F1 races in real-time, giving users the sensation of being on a real pit wall.
 
@@ -18,33 +18,33 @@ The main focuses of this project are:
 
 ---
 
-## ✨ Key Features
+## Key Features
 
-### 🖥️ Dashboard & Visualization
+### Dashboard & Visualization
 
-* **📊 Live Standings:** Real-time leaderboard of all 20 drivers, updated every lap, with time intervals and DRS status.
-* **📈 Telemetry Charts:** Real-time graphs comparing speed, tire wear, and fuel levels between top drivers.
-* **👤 Driver Panels:** Detailed telemetry information for monitored drivers.
-* **📋 Race & Strategy Log:** Records of all key race events (overtakes, pit stops, incidents, and team radio messages).
+* ** Live Standings:** Real-time leaderboard of all 20 drivers, updated every lap, with time intervals and DRS status.
+* ** Telemetry Charts:** Real-time graphs comparing speed, tire wear, and fuel levels between top drivers.
+* ** Driver Panels:** Detailed telemetry information for monitored drivers.
+* ** Race & Strategy Log:** Records of all key race events (overtakes, pit stops, incidents, and team radio messages).
 
-### ⚙️ Dynamic Simulation
+###  Dynamic Simulation
 
-* **🏎️ Driver Characteristics:** Each driver has unique stats (Pace, Consistency, Tire Management) that dynamically influence performance.
-* **🌦️ Realistic Weather:** Weather conditions are fetched from the Open-Meteo API and significantly affect tire grip.
-* **💨 DRS (Drag Reduction System):** Drivers gain a speed boost when within 1 second of the car ahead.
+* ** Driver Characteristics:** Each driver has unique stats (Pace, Consistency, Tire Management) that dynamically influence performance.
+* ** Realistic Weather:** Weather conditions are fetched from the Open-Meteo API and significantly affect tire grip.
+* ** DRS (Drag Reduction System):** Drivers gain a speed boost when within 1 second of the car ahead.
 
-### ⚡ Incidents & Strategy
+###  Incidents & Strategy
 
-* **🟡 Safety Car & VSC:** Can appear randomly or due to crashes, slowing down the race and opening strategic pit stop opportunities.
-* **💥 DNFs & Driver Errors:** Drivers can suffer mechanical failures or make mistakes (wide runs, spins, crashes) based on their stats.
+* ** Safety Car & VSC:** Can appear randomly or due to crashes, slowing down the race and opening strategic pit stop opportunities.
+* ** DNFs & Driver Errors:** Drivers can suffer mechanical failures or make mistakes (wide runs, spins, crashes) based on their stats.
 
-### 💡 Highlight Feature
+###  Highlight Feature
 
-* **🧠 AI Strategy Insight:** After the race, data is sent to the backend server, which requests an AI model to provide an analytical summary of performance and strategy.
+* ** AI Strategy Insight:** After the race, data is sent to the backend server, which requests an AI model to provide an analytical summary of performance and strategy.
 
 ---
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 **Frontend:**
 
@@ -61,7 +61,7 @@ The main focuses of this project are:
 
 ---
 
-## 🏁 How to Run
+## How to Run
 
 To run this project locally, follow these steps:
 
@@ -83,7 +83,7 @@ cd pit-wall-dashboard
 
 ---
 
-## 🔮 Roadmap
+## Roadmap
 
 * [ ] Qualification Mode — Add a qualifying session to determine starting grid positions.
 * [ ] Automated Pit Stop Strategy — AI not only analyzes but also recommends optimal pit stop timing.
@@ -91,12 +91,12 @@ cd pit-wall-dashboard
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Thank you for checking out this project! If you have suggestions or feedback, feel free to:
 
-* Create an **Issue** to report bugs or suggest new features 🧩
-* Submit a **Pull Request** to contribute directly to development ⚙️
+* Create an **Issue** to report bugs or suggest new features 
+* Submit a **Pull Request** to contribute directly to development 
 
 ---
 
